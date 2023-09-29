@@ -5,6 +5,8 @@ import lombok.*;
 
 /**
  * @author Frederic Eßer
+ *
+ * This is the Entity that will be represented as a table in the database
  */
 @Entity                     // defines this class as a JPA Entity that then can be persisted to a relational Database
 @Table(name = "EMPLOYEES")  // defines the name of the table in the database
@@ -24,4 +26,16 @@ public class Employee {
     private String firstName;
     @NonNull
     private String lastName;
+
+    /**
+     * Constructor that is different to the AllArgs/NoArgs Constructor created by lombok
+     * Here we want to specifically and only set everything except the ID
+     *
+     * @param firstName - the first name of the Employee
+     * @param lastName - the last name of the Employee
+     */
+    public Employee(@NonNull String firstName, @NonNull String lastName) {
+        this.firstName = firstName;
+        this.lastName = lastName;
+    }
 }
