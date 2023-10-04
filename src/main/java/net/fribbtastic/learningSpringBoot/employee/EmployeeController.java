@@ -5,7 +5,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -16,14 +15,10 @@ import java.util.List;
 public class EmployeeController {
 
     @Autowired // Spring will handle the dependency injection for us
-    private EmployeeRepository repository;
+    private EmployeeServiceImpl employeeService;
 
-    @GetMapping() // just like the RequestMapping, we can define a Mapping for the GET request
+    @GetMapping // Just like the RequestMapping, we can define a mapping here, GET in this case
     public List<Employee> getAllEmployees() {
-        List<Employee> result = new ArrayList<>();
-
-        this.repository.findAll().forEach(result::add);
-
-        return result;
+        return this.employeeService.getAll(); // call the "getAll" Method from the service
     }
 }
