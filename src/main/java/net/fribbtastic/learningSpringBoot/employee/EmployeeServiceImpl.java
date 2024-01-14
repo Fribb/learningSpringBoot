@@ -1,5 +1,6 @@
 package net.fribbtastic.learningSpringBoot.employee;
 
+import net.fribbtastic.learningSpringBoot.exceptions.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -23,10 +24,18 @@ public class EmployeeServiceImpl implements EmployeeService {
     @Override
     public List<Employee> getAll() {
 
-        List<Employee> employeeList = new ArrayList<>();
+        return new ArrayList<>(this.repository.findAll());      // call the repository to find all Employees
+    }
 
-        this.repository.findAll().forEach(employeeList::add);
-
-        return employeeList;
+    /**
+     * call the repository to get a single employee by its ID
+     * if the ID does not exist, an {@link EntityNotFoundException} will be thrown
+     *
+     * @param id - the unique ID of the employee
+     * @return the Employee
+     */
+    @Override
+    public Employee getOne(Long id) {
+        return this.repository.findById(id).orElseThrow(() -> new EntityNotFoundException(id));     // find the Employee by its ID or, if it doesn't exist, throw an EntityNotFoundException
     }
 }
