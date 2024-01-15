@@ -1,18 +1,17 @@
 package net.fribbtastic.learningSpringBoot.employee;
 
+import net.fribbtastic.learningSpringBoot.exceptions.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 /**
  * @author Frederic Eßer
  */
-@RestController // identifier for Spring that this is a Controller for the RESTful web services
+@RestController // identifier for Spring that this is a Controller for the restful web services
 @RequestMapping(path = "/employee", produces = "application/json") // the definition of the mapping and that this controller is accessible on "/employee" and that it will produce a JSON response
 public class EmployeeController {
 
@@ -29,8 +28,32 @@ public class EmployeeController {
 
         List<Employee> employeeList = this.employeeService.getAll(); // call the getAll Method from the service to get all Employees
 
-        ResponseEntity<List<Employee>> response = new ResponseEntity<>(employeeList, HttpStatus.OK); // Construct the Response Entity
+        return new ResponseEntity<>(employeeList, HttpStatus.OK);   // Construct the Response Entity and return it
+    }
 
-        return response;
+    /**
+     * get a single Employee by its ID
+     *
+     * @param id - the unique ID of the Employee
+     * @return -
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Employee> getOneEmployee(@PathVariable Long id) {
+
+        Employee employee = this.employeeService.getOne(id);    // call the getOne Method from the service to get a single Employee from it
+
+        return new ResponseEntity<>(employee, HttpStatus.OK);   // construct the Response Entity and return it
+    }
+
+    /**
+     * Exception handling for the EntityNotFoundException thrown by the Service getOne method
+     *
+     * @param exception - the thrown exception
+     * @return a new response body with Status code 404 and the exception message as body
+     */
+    @ExceptionHandler (EntityNotFoundException.class)       // handles the Specific EntityNotFoundException thrown by the controller
+    public ResponseEntity<Object> handleNotFoundException(EntityNotFoundException exception) {
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)      // return a new ResponseEntity with the Status 404 and the exception message as body
+                .body(exception.getMessage());
     }
 }

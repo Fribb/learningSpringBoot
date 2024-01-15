@@ -1,5 +1,7 @@
 package net.fribbtastic.learningSpringBoot.employee;
 
+import net.fribbtastic.learningSpringBoot.exceptions.EntityNotFoundException;
+import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -37,13 +39,15 @@ public class EmployeeControllerUnitTest {
             new Employee(2L, "Test FirstName 02", "Test LastName 02")
     );
 
+    private final Employee employee = new Employee(3L,"Test FirstName 03", "Test LastName 03");
+
     /**
      * Test the getAll method of the service through a WebMVC Test
      * The returned List should contain 2 Elements with firstName and lastName
      *
      * @throws Exception - Exception thrown by MockMvc
      */
-    @DisplayName("Test [WebMVC]: getAll() [positive]")
+    @DisplayName("Test [WebMVC]: get all Employees")
     @Test
     public void testMvcGetAll() throws Exception {
 
@@ -66,7 +70,7 @@ public class EmployeeControllerUnitTest {
      *
      * @throws Exception - Exception thrown my MockMvc
      */
-    @DisplayName("Test [WebMVC]: getAll() [negative]")
+    @DisplayName("Test [WebMVC]: get all Employees (empty list")
     @Test
     public void testMvcGetAll_Empty() throws Exception {
         Mockito.when(this.service.getAll()).thenReturn(Collections.emptyList());
@@ -75,5 +79,43 @@ public class EmployeeControllerUnitTest {
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
                 .andExpect(MockMvcResultMatchers.jsonPath("$").isEmpty());                                             // this time we expect the list to be empty
+    }
+
+    /**
+     * Test to get a single Employee by its ID
+     *
+     * @throws Exception - Exception thrown by MockMVC
+     */
+    @DisplayName("Test [WebMVC]: get one Employee")
+    @Test
+    public void testMvcGetOne() throws Exception {
+        Mockito.when(this.service.getOne(this.employee.getId())).thenReturn(this.employee);                             // stub the getOne Method to return a pre-defined Employee
+
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/employee/" + this.employee.getId()).accept(MediaType.APPLICATION_JSON))   // request that specific employee
+                .andDo(MockMvcResultHandlers.print())                                                                                         // print the output
+                .andExpect(MockMvcResultMatchers.status().isOk())                                                                             // Expect that the status code is OK (200)
+                .andExpect(MockMvcResultMatchers.jsonPath("$").exists())                                                             // Expect that the element exists
+                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("Test FirstName 03"))                     // Expect that the firstName is correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Test LastName 03"));                      // Expect that the lastName is correct
+    }
+
+    /**
+     * Test to get a single Employee by its ID that doesn't exist
+     *
+     * @throws Exception - Exception thrown by MockMVC
+     */
+    @DisplayName("Test [WebMVC]: get one missing Employee")
+    @Test
+    public void testMvcGetOne_Empty() throws Exception {
+
+        long id = 4L;                                                                                                                                                     // save the ID so that it is easier to change
+
+        Mockito.when(this.service.getOne(id)).thenThrow(new EntityNotFoundException(id));                                                                                 // Stub the getOne Method to throw an Exception when we call it with the ID
+
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/employee/" + id).accept(MediaType.APPLICATION_JSON))                                                  // request the non-existing employee
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isNotFound())                                                                                                   // Expect that the Status is 404
+                .andExpect(result -> Assertions.assertThat(result.getResolvedException()).isInstanceOf(EntityNotFoundException.class))                                    // Expect that the ResolvedException is the EntityNotFoundException
+                .andExpect(result -> Assertions.assertThat(result.getResolvedException().getMessage()).isEqualTo("Entity with the ID '4' could not be found"));   // Expect that the ResolvedException message is correct
     }
 }
