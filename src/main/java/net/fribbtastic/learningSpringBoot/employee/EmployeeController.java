@@ -1,6 +1,5 @@
 package net.fribbtastic.learningSpringBoot.employee;
 
-import net.fribbtastic.learningSpringBoot.exceptions.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -43,17 +42,5 @@ public class EmployeeController {
         Employee employee = this.employeeService.getOne(id);    // call the getOne Method from the service to get a single Employee from it
 
         return new ResponseEntity<>(employee, HttpStatus.OK);   // construct the Response Entity and return it
-    }
-
-    /**
-     * Exception handling for the EntityNotFoundException thrown by the Service getOne method
-     *
-     * @param exception - the thrown exception
-     * @return a new response body with Status code 404 and the exception message as body
-     */
-    @ExceptionHandler (EntityNotFoundException.class)       // handles the Specific EntityNotFoundException thrown by the controller
-    public ResponseEntity<Object> handleNotFoundException(EntityNotFoundException exception) {
-        return ResponseEntity.status(HttpStatus.NOT_FOUND)      // return a new ResponseEntity with the Status 404 and the exception message as body
-                .body(exception.getMessage());
     }
 }

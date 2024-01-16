@@ -108,14 +108,23 @@ public class EmployeeControllerUnitTest {
     @Test
     public void testMvcGetOne_Empty() throws Exception {
 
-        long id = 4L;                                                                                                                                                     // save the ID so that it is easier to change
+        long id = 4L;                                                                                                                                                 // save the ID so that it is easier to change
 
-        Mockito.when(this.service.getOne(id)).thenThrow(new EntityNotFoundException(id));                                                                                 // Stub the getOne Method to throw an Exception when we call it with the ID
+        Mockito.when(this.service.getOne(id)).thenThrow(new EntityNotFoundException(id));                                                                             // Stub the getOne Method to throw an Exception when we call it with the ID
 
-        this.mockMvc.perform(MockMvcRequestBuilders.get("/employee/" + id).accept(MediaType.APPLICATION_JSON))                                                  // request the non-existing employee
+        this.mockMvc.perform(MockMvcRequestBuilders.get("/employee/" + id).accept(MediaType.APPLICATION_JSON))                                              // request the non-existing employee
                 .andDo(MockMvcResultHandlers.print())
-                .andExpect(MockMvcResultMatchers.status().isNotFound())                                                                                                   // Expect that the Status is 404
-                .andExpect(result -> Assertions.assertThat(result.getResolvedException()).isInstanceOf(EntityNotFoundException.class))                                    // Expect that the ResolvedException is the EntityNotFoundException
-                .andExpect(result -> Assertions.assertThat(result.getResolvedException().getMessage()).isEqualTo("Entity with the ID '4' could not be found"));   // Expect that the ResolvedException message is correct
+                .andExpect(MockMvcResultMatchers.status().isNotFound())                                                                                               // Expect that the Status is 404 Not Found
+                .andExpect(result -> Assertions.assertThat(result.getResolvedException())
+                        .isInstanceOf(EntityNotFoundException.class)                                                                                                  // Assert that the resolved Exception is the EntityNotFoundException
+                        .hasMessage("Entity with the ID '4' could not be found"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").exists())                                                                               // Expect that there is an error element
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.code").value(404))                                                            // The Code is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.reason").value("Not Found"))                                                  // The reason is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.message").value("Entity not found"))                                          // The message is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '4' could not be found"))                 // The details is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.timestamp").isNotEmpty());                                                                // The timestamp is not empty (since the timestamp could/would be different between the time it was set in the response and in the test)
+
+        Mockito.verify(this.service, Mockito.times(1)).getOne(id);                                                                               // Verify that the getOne Method of the Service was called one time
     }
 }
