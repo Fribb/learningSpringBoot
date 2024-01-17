@@ -1,6 +1,7 @@
 package net.fribbtastic.learningSpringBoot.employee;
 
 import net.fribbtastic.learningSpringBoot.LearningSpringBootApplication;
+import net.fribbtastic.learningSpringBoot.responses.ApiResponse;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -8,8 +9,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
+import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
+
+import java.util.List;
 
 /**
  * @author Frederic Eßer
@@ -23,30 +28,41 @@ public class EmployeeControllerIntegrationTest {
     @Autowired
     private TestRestTemplate template;
 
-    @DisplayName("Test [Integration]: getAll() [positive]")
+    @DisplayName("Test [Integration]: get All Employees")
     @Sql({"classpath:employee/truncate.sql"}) // run a database script when executing this test
     @Sql({"classpath:employee/insert.sql"})
     @Test
     public void testGetAllEmployees() {
-        ResponseEntity<Employee[]> response = this.template.getForEntity("http://localhost:" + this.port + "/employee", Employee[].class);
+        // Make the GET request
+        ResponseEntity<ApiResponse<List<Employee>>> responseEntity = this.template.exchange("/employee", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
-        Assertions.assertThat(response.getBody()).isNotNull();                                                          // Assert that the Body of the Response is not Null (Fail-Fast)
+        Assertions.assertThat(responseEntity.getStatusCode().value()).isEqualTo(200);       // assert that the response status code is 200
+        Assertions.assertThat(responseEntity.getBody()).isNotNull();                                // assert that the response body is not null
+        Assertions.assertThat(responseEntity.getBody().getStatusCode()).isEqualTo(200);     // assert that the JSON element statusCode is 200
+        Assertions.assertThat(responseEntity.getBody().getData()).isNotNull();                      // assert that the JSON element data is not null
+        Assertions.assertThat(responseEntity.getBody().getData().size()).isEqualTo(3);      // assert that the JSON element data has 0 elements
 
-        Assertions.assertThat(response.getStatusCode().value()).isEqualTo(200);                                 // Assert that the response has HTTP Status Code OK
-        Assertions.assertThat(response.getBody().length).isEqualTo(3);                                          // Assert that the number of Employees in the List are 3 elements
-        Assertions.assertThat(response.getBody()[0].getFirstName()).isEqualTo("Test FirstName 01");             // Assert that the First Name of the first element is the expected value
-        Assertions.assertThat(response.getBody()[0].getLastName()).isEqualTo("Test LastName 01");               // Assert that the Last Name of the first element is the expected value
+        Assertions.assertThat(responseEntity.getBody().getData().get(0).getFirstName()).isEqualTo("Test FirstName 01");      // assert that the firstName is as expected
+        Assertions.assertThat(responseEntity.getBody().getData().get(0).getLastName()).isEqualTo("Test LastName 01");       // assert that the lastName is as Expected
+
+        Assertions.assertThat(responseEntity.getBody().getData().get(1).getFirstName()).isEqualTo("Test FirstName 02");      // assert that the firstName is as expected
+        Assertions.assertThat(responseEntity.getBody().getData().get(1).getLastName()).isEqualTo("Test LastName 02");       // assert that the lastName is as Expected
+
+        Assertions.assertThat(responseEntity.getBody().getData().get(2).getFirstName()).isEqualTo("Test FirstName 03");      // assert that the firstName is as expected
+        Assertions.assertThat(responseEntity.getBody().getData().get(2).getLastName()).isEqualTo("Test LastName 03");       // assert that the lastName is as Expected
     }
 
-    @DisplayName("Test [Integration]: getAll() [negative]")
+    @DisplayName("Test [Integration]: get All Employees (empty list)")
     @Sql({"classpath:employee/truncate.sql"})
     @Test
     public void testGetAllEmployees_Empty() {
-        ResponseEntity<Employee[]> response = this.template.getForEntity("http://localhost:" + this.port + "/employee", Employee[].class);
+        // Make the GET request
+        ResponseEntity<ApiResponse<List<Employee>>> responseEntity = this.template.exchange("/employee", HttpMethod.GET, null, new ParameterizedTypeReference<>() {});
 
-        Assertions.assertThat(response.getBody()).isNotNull();                                                          // Assert that the Body of the Response is not Null (Fail-Fast)
-
-        Assertions.assertThat(response.getStatusCode().value()).isEqualTo(200);                                 // Assert that the response has HTTP Status Code OK
-        Assertions.assertThat(response.getBody().length).isEqualTo(0);                                          // Assert that there are no employees in the list
+        Assertions.assertThat(responseEntity.getStatusCode().value()).isEqualTo(200);       // assert that the response status code is 200
+        Assertions.assertThat(responseEntity.getBody()).isNotNull();                                // assert that the response body is not null
+        Assertions.assertThat(responseEntity.getBody().getStatusCode()).isEqualTo(200);     // assert that the JSON element statusCode is 200
+        Assertions.assertThat(responseEntity.getBody().getData()).isNotNull();                      // assert that the JSON element data is not null
+        Assertions.assertThat(responseEntity.getBody().getData().size()).isEqualTo(0);      // assert that the JSON element data has 0 elements
     }
 }

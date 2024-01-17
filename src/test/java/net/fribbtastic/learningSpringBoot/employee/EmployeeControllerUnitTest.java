@@ -56,12 +56,15 @@ public class EmployeeControllerUnitTest {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/employee").accept(MediaType.APPLICATION_JSON))              // trigger the '/employee' endpoint with 'application/json' content type
                 .andDo(MockMvcResultHandlers.print())                                                                           // print the result
                 .andExpect(MockMvcResultMatchers.status().isOk())                                                               // status needs to be OK
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0]").exists())                                            // there should be a first element
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].firstName").value("Test FirstName 01"))    // firstName should be the expected value
-                .andExpect(MockMvcResultMatchers.jsonPath("$[0].lastName").value("Test LastName 01"))      // lastName should be the expected value
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1]").exists())                                            // there should be a second element
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].firstName").value("Test FirstName 02"))    // firstName should be the expected value
-                .andExpect(MockMvcResultMatchers.jsonPath("$[1].lastName").value("Test LastName 02"));     // lastName should be the expected value
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(200))                                // expect the status element to be correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.[0]").exists())                                            // there should be a first element
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.[0].firstName").value("Test FirstName 01"))    // firstName should be the expected value
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.[0].lastName").value("Test LastName 01"))      // lastName should be the expected value
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.[1]").exists())                                            // there should be a second element
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.[1].firstName").value("Test FirstName 02"))    // firstName should be the expected value
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.[1].lastName").value("Test LastName 02"));     // lastName should be the expected value
+
+        Mockito.verify(this.service, Mockito.times(1)).getAll();                                               // Verify that the getAll Method of the Service was called one time
     }
 
     /**
@@ -70,7 +73,7 @@ public class EmployeeControllerUnitTest {
      *
      * @throws Exception - Exception thrown my MockMvc
      */
-    @DisplayName("Test [WebMVC]: get all Employees (empty list")
+    @DisplayName("Test [WebMVC]: get all Employees (empty list)")
     @Test
     public void testMvcGetAll_Empty() throws Exception {
         Mockito.when(this.service.getAll()).thenReturn(Collections.emptyList());
@@ -78,13 +81,16 @@ public class EmployeeControllerUnitTest {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/employee").accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
                 .andExpect(MockMvcResultMatchers.status().isOk())
-                .andExpect(MockMvcResultMatchers.jsonPath("$").isEmpty());                                             // this time we expect the list to be empty
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(200))                                // expect the status element to be correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data").isEmpty());                                             // this time we expect the list to be empty
+
+        Mockito.verify(this.service, Mockito.times(1)).getAll();                                               // Verify that the getAll Method of the Service was called one time
     }
 
     /**
      * Test to get a single Employee by its ID
      *
-     * @throws Exception - Exception thrown by MockMVC
+     * @throws Exception Exception thrown by MockMVC
      */
     @DisplayName("Test [WebMVC]: get one Employee")
     @Test
@@ -94,9 +100,12 @@ public class EmployeeControllerUnitTest {
         this.mockMvc.perform(MockMvcRequestBuilders.get("/employee/" + this.employee.getId()).accept(MediaType.APPLICATION_JSON))   // request that specific employee
                 .andDo(MockMvcResultHandlers.print())                                                                                         // print the output
                 .andExpect(MockMvcResultMatchers.status().isOk())                                                                             // Expect that the status code is OK (200)
-                .andExpect(MockMvcResultMatchers.jsonPath("$").exists())                                                             // Expect that the element exists
-                .andExpect(MockMvcResultMatchers.jsonPath("$.firstName").value("Test FirstName 03"))                     // Expect that the firstName is correct
-                .andExpect(MockMvcResultMatchers.jsonPath("$.lastName").value("Test LastName 03"));                      // Expect that the lastName is correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(200))                                        // Expect that the status element is correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists())                                                        // Expect that the data element exists
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.firstName").value("Test FirstName 03"))                // Expect that the firstName is correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.lastName").value("Test LastName 03"));                 // Expect that the lastName is correct
+
+        Mockito.verify(this.service, Mockito.times(1)).getOne(this.employee.getId());                                   // Verify that the getOne Method of the Service was called one time
     }
 
     /**
@@ -118,9 +127,9 @@ public class EmployeeControllerUnitTest {
                 .andExpect(result -> Assertions.assertThat(result.getResolvedException())
                         .isInstanceOf(EntityNotFoundException.class)                                                                                                  // Assert that the resolved Exception is the EntityNotFoundException
                         .hasMessage("Entity with the ID '4' could not be found"))
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(404))                                                                // The Code is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error").exists())                                                                               // Expect that there is an error element
-                .andExpect(MockMvcResultMatchers.jsonPath("$.error.code").value(404))                                                            // The Code is set as expected
-                .andExpect(MockMvcResultMatchers.jsonPath("$.error.reason").value("Not Found"))                                                  // The reason is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.type").value(EntityNotFoundException.class.getSimpleName()))                              // The message is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.message").value("Entity not found"))                                          // The message is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '4' could not be found"))                 // The details is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.timestamp").isNotEmpty());                                                                // The timestamp is not empty (since the timestamp could/would be different between the time it was set in the response and in the test)

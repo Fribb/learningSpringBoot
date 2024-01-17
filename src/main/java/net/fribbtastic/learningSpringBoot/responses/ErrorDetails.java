@@ -1,8 +1,7 @@
-package net.fribbtastic.learningSpringBoot.exceptions;
+package net.fribbtastic.learningSpringBoot.responses;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Getter;
-import org.springframework.http.HttpStatus;
 
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
@@ -16,16 +15,12 @@ import java.time.format.DateTimeFormatter;
 public class ErrorDetails {
 
     /**
-     * The HTTP Code of the Status
+     * The Exception Type
      */
-    private final int code;
+    @JsonInclude(JsonInclude.Include.NON_NULL)          // We don't want to display the type when it is null
+    private final String type;
     /**
      * The ReasonPhrase of the HTTP Status
-     */
-    @JsonProperty("reason")
-    private final String reasonPhrase;
-    /**
-     * The short descriptive message of the error
      */
     private final String message;
     /**
@@ -40,15 +35,13 @@ public class ErrorDetails {
     /**
      * Construct an ErrorDetails element by setting the Status Code, the Reason, the message and details and add the current timestamp
      *
-     * @param status - The {@link HttpStatus} that should be used
      * @param message - The Message of the Error
      * @param details - The detailed description of the Error
      */
-    public ErrorDetails(HttpStatus status, String message, String details) {
-        this.code = status.value();
-        this.reasonPhrase = status.getReasonPhrase();
+    public ErrorDetails(String message, String details, String type) {
         this.message = message;
         this.details = details;
+        this.type = type;
         this.timestamp = ZonedDateTime.now().format(DateTimeFormatter.ISO_OFFSET_DATE_TIME);
     }
 }
