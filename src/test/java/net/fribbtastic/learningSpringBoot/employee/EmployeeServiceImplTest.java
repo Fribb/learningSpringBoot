@@ -98,4 +98,23 @@ class EmployeeServiceImplTest {
                 .hasMessage("Entity with the ID '4' could not be found");                                               // Assert that the Message of the Exception is the expected Message
     }
 
+    /**
+     * Test to create a new Employee
+     */
+    @DisplayName("Test: create a new Employee")
+    @Test
+    public void testCreateEmployee() {
+
+        Employee savingEmp = new Employee(5L, "Test Employee FirstName 05", "Test Employee LastName 05");   // create a new Employee
+
+        Mockito.when(this.repository.save(savingEmp)).thenReturn(savingEmp);                                            // Stub the save method to return the created employee
+
+        Employee emp = this.service.createEmployee(savingEmp);                                                          // Create the new Employee
+
+        Assertions.assertThat(emp).isNotNull();                                                                         // Assert that the created Employee is not null
+        Assertions.assertThat(emp.getId()).isEqualTo(5L);                                                       // Assert that the ID is as expected
+        Assertions.assertThat(emp.getFirstName()).isEqualTo("Test Employee FirstName 05");                      // Assert that the FirstName is as expected
+        Assertions.assertThat(emp.getLastName()).isEqualTo("Test Employee LastName 05");                        // Assert that the LastName is as expected
+    }
+
 }

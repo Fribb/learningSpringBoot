@@ -38,4 +38,15 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Employee getEmployee(Long id) {
         return this.repository.findById(id).orElseThrow(() -> new EntityNotFoundException(id));     // find the Employee by its ID or, if it doesn't exist, throw an EntityNotFoundException
     }
+
+    /**
+     * call the repository to create a new employee and return it
+     *
+     * @param employee the information of the new employee that should be created
+     * @return the created employee
+     */
+    @Override
+    public Employee createEmployee(Employee employee) {
+        return this.repository.save(employee);
+    }
 }
