@@ -7,6 +7,6 @@ import java.util.List;
  */
 public interface EmployeeService {
 
-    List<Employee> getAll();
-    Employee getOne(Long id);
+    List<Employee> getAllEmployees();
+    Employee getEmployee(Long id);
 }

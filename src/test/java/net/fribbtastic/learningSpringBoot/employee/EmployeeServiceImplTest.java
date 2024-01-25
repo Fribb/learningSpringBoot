@@ -41,7 +41,7 @@ class EmployeeServiceImplTest {
     public void testGetAllEmployees() {
         Mockito.when(this.repository.findAll()).thenReturn(this.employeeList);                                          // Stub the findAll method of the Repository
 
-        List<Employee> employeeList = this.service.getAll();
+        List<Employee> employeeList = this.service.getAllEmployees();
 
         Assertions.assertThat(employeeList).isNotNull();                                                                // Assert that the list is not null
         Assertions.assertThat(employeeList.size()).isEqualTo(2);                                                // Assert that the list is exactly 2 elements long
@@ -59,7 +59,7 @@ class EmployeeServiceImplTest {
     public void testGetAllEmployee_Empty() {
         Mockito.when(this.repository.findAll()).thenReturn(Collections.emptyList());                                    // Stub the findAll method with an Empty List
 
-        List<Employee> employeeList = this.service.getAll();
+        List<Employee> employeeList = this.service.getAllEmployees();
 
         Assertions.assertThat(employeeList).isNotNull();                                                                // Assert that the List is not null
         Assertions.assertThat(employeeList).isEmpty();                                                                  // Assert that the List is empty
@@ -75,7 +75,7 @@ class EmployeeServiceImplTest {
 
         Mockito.when(this.repository.findById(this.employee.getId())).thenReturn(Optional.of(this.employee));           // Stub the findById method of the repository to return the prepared Employee
 
-        Employee emp = this.service.getOne(this.employee.getId());                                                      // get the Employee by its ID
+        Employee emp = this.service.getEmployee(this.employee.getId());                                                      // get the Employee by its ID
 
         Assertions.assertThat(emp).isNotNull();                                                                         // Assert that the returned Employee isn't null
         Assertions.assertThat(emp.getId()).isEqualTo(3L);                                                       // Assert that the ID of the Employee is correct
@@ -93,7 +93,7 @@ class EmployeeServiceImplTest {
         Mockito.when(this.repository.findById(4L)).thenReturn(Optional.empty());                                      //Stub the findById method of the repository to return an Empty response
 
         Assertions.assertThatThrownBy(() -> {                                                                           // Assert that an Exception will be thrown
-            this.service.getOne(4L);                                                                                 // get the Employee with the non-existing ID 4L
+            this.service.getEmployee(4L);                                                                                 // get the Employee with the non-existing ID 4L
         }).isInstanceOf(EntityNotFoundException.class)                                                                  // Assert that the thrown Exception is the expected Exception Class
                 .hasMessage("Entity with the ID '4' could not be found");                                               // Assert that the Message of the Exception is the expected Message
     }

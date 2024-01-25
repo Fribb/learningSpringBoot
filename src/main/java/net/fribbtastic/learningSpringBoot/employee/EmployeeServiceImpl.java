@@ -22,7 +22,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return a list of Employees
      */
     @Override
-    public List<Employee> getAll() {
+    public List<Employee> getAllEmployees() {
 
         return new ArrayList<>(this.repository.findAll());      // call the repository to find all Employees
     }
@@ -35,7 +35,7 @@ public class EmployeeServiceImpl implements EmployeeService {
      * @return the Employee
      */
     @Override
-    public Employee getOne(Long id) {
+    public Employee getEmployee(Long id) {
         return this.repository.findById(id).orElseThrow(() -> new EntityNotFoundException(id));     // find the Employee by its ID or, if it doesn't exist, throw an EntityNotFoundException
     }
 }

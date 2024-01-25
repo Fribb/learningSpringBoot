@@ -27,7 +27,7 @@ public class EmployeeController {
     @GetMapping // Just like the RequestMapping, we can define a mapping here, GET in this case
     public ResponseEntity<ApiResponse<List<Employee>>> getAllEmployees() {
 
-        List<Employee> employeeList = this.employeeService.getAll(); // call the getAll Method from the service to get all Employees
+        List<Employee> employeeList = this.employeeService.getAllEmployees(); // call the getAll Method from the service to get all Employees
 
         ApiResponse<List<Employee>> response = ApiResponse.createSuccessResponse(HttpStatus.OK, employeeList); // create a new success ApiResponse
 
@@ -41,9 +41,9 @@ public class EmployeeController {
      * @return the {@link ApiResponse} with the Employee wrapped in a {@link ResponseEntity}
      */
     @GetMapping("/{id}")
-    public ResponseEntity<ApiResponse<Employee>> getOneEmployee(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<Employee>> getEmployee(@PathVariable Long id) {
 
-        Employee employee = this.employeeService.getOne(id);    // call the getOne Method from the service to get a single Employee from it
+        Employee employee = this.employeeService.getEmployee(id);    // call the getOne Method from the service to get a single Employee from it
 
         ApiResponse<Employee> response = ApiResponse.createSuccessResponse(HttpStatus.OK, employee); // create a new success ApiResponse
 

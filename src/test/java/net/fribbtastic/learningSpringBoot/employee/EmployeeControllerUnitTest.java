@@ -51,7 +51,7 @@ public class EmployeeControllerUnitTest {
     @Test
     public void testMvcGetAll() throws Exception {
 
-        Mockito.when(this.service.getAll()).thenReturn(this.employeeList);                                                      // stub the getAll method with the prepared List
+        Mockito.when(this.service.getAllEmployees()).thenReturn(this.employeeList);                                                      // stub the getAll method with the prepared List
 
         this.mockMvc.perform(MockMvcRequestBuilders.get("/employee").accept(MediaType.APPLICATION_JSON))              // trigger the '/employee' endpoint with 'application/json' content type
                 .andDo(MockMvcResultHandlers.print())                                                                           // print the result
@@ -64,7 +64,7 @@ public class EmployeeControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.[1].firstName").value("Test FirstName 02"))    // firstName should be the expected value
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.[1].lastName").value("Test LastName 02"));     // lastName should be the expected value
 
-        Mockito.verify(this.service, Mockito.times(1)).getAll();                                               // Verify that the getAll Method of the Service was called one time
+        Mockito.verify(this.service, Mockito.times(1)).getAllEmployees();                                               // Verify that the getAll Method of the Service was called one time
     }
 
     /**
@@ -76,7 +76,7 @@ public class EmployeeControllerUnitTest {
     @DisplayName("Test [WebMVC]: get all Employees (empty list)")
     @Test
     public void testMvcGetAll_Empty() throws Exception {
-        Mockito.when(this.service.getAll()).thenReturn(Collections.emptyList());
+        Mockito.when(this.service.getAllEmployees()).thenReturn(Collections.emptyList());
 
         this.mockMvc.perform(MockMvcRequestBuilders.get("/employee").accept(MediaType.APPLICATION_JSON))
                 .andDo(MockMvcResultHandlers.print())
@@ -84,7 +84,7 @@ public class EmployeeControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(200))                                // expect the status element to be correct
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data").isEmpty());                                             // this time we expect the list to be empty
 
-        Mockito.verify(this.service, Mockito.times(1)).getAll();                                               // Verify that the getAll Method of the Service was called one time
+        Mockito.verify(this.service, Mockito.times(1)).getAllEmployees();                                               // Verify that the getAll Method of the Service was called one time
     }
 
     /**
@@ -95,7 +95,7 @@ public class EmployeeControllerUnitTest {
     @DisplayName("Test [WebMVC]: get one Employee")
     @Test
     public void testMvcGetOne() throws Exception {
-        Mockito.when(this.service.getOne(this.employee.getId())).thenReturn(this.employee);                             // stub the getOne Method to return a pre-defined Employee
+        Mockito.when(this.service.getEmployee(this.employee.getId())).thenReturn(this.employee);                             // stub the getOne Method to return a pre-defined Employee
 
         this.mockMvc.perform(MockMvcRequestBuilders.get("/employee/" + this.employee.getId()).accept(MediaType.APPLICATION_JSON))   // request that specific employee
                 .andDo(MockMvcResultHandlers.print())                                                                                         // print the output
@@ -105,7 +105,7 @@ public class EmployeeControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.firstName").value("Test FirstName 03"))                // Expect that the firstName is correct
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.lastName").value("Test LastName 03"));                 // Expect that the lastName is correct
 
-        Mockito.verify(this.service, Mockito.times(1)).getOne(this.employee.getId());                                   // Verify that the getOne Method of the Service was called one time
+        Mockito.verify(this.service, Mockito.times(1)).getEmployee(this.employee.getId());                                   // Verify that the getOne Method of the Service was called one time
     }
 
     /**
@@ -119,7 +119,7 @@ public class EmployeeControllerUnitTest {
 
         long id = 4L;                                                                                                                                                 // save the ID so that it is easier to change
 
-        Mockito.when(this.service.getOne(id)).thenThrow(new EntityNotFoundException(id));                                                                             // Stub the getOne Method to throw an Exception when we call it with the ID
+        Mockito.when(this.service.getEmployee(id)).thenThrow(new EntityNotFoundException(id));                                                                             // Stub the getOne Method to throw an Exception when we call it with the ID
 
         this.mockMvc.perform(MockMvcRequestBuilders.get("/employee/" + id).accept(MediaType.APPLICATION_JSON))                                              // request the non-existing employee
                 .andDo(MockMvcResultHandlers.print())
@@ -134,6 +134,6 @@ public class EmployeeControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '4' could not be found"))                 // The details is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.timestamp").isNotEmpty());                                                                // The timestamp is not empty (since the timestamp could/would be different between the time it was set in the response and in the test)
 
-        Mockito.verify(this.service, Mockito.times(1)).getOne(id);                                                                               // Verify that the getOne Method of the Service was called one time
+        Mockito.verify(this.service, Mockito.times(1)).getEmployee(id);                                                                               // Verify that the getOne Method of the Service was called one time
     }
 }
