@@ -1,5 +1,6 @@
 package net.fribbtastic.learningSpringBoot.employee;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
 import net.fribbtastic.learningSpringBoot.exceptions.EntityNotFoundException;
 import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.DisplayName;
@@ -40,6 +41,9 @@ public class EmployeeControllerUnitTest {
     );
 
     private final Employee employee = new Employee(3L,"Test FirstName 03", "Test LastName 03");
+
+    @Autowired
+    private ObjectMapper objectMapper;
 
     /**
      * Test the getAll method of the service through a WebMVC Test
@@ -135,5 +139,39 @@ public class EmployeeControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.timestamp").isNotEmpty());                                                                // The timestamp is not empty (since the timestamp could/would be different between the time it was set in the response and in the test)
 
         Mockito.verify(this.service, Mockito.times(1)).getEmployee(id);                                                                               // Verify that the getOne Method of the Service was called one time
+    }
+
+    /**
+     * Test to create a new Employee
+     *
+     * @throws Exception Exception thrown by MockMVC
+     */
+    @DisplayName("Test: [WebMVC]: create a new Employee")
+    @Test
+    public void testMvcCreateEmployee() throws Exception {
+
+        Employee emp = new Employee(4L, "Test FirstName 04", "Test LastName 04");
+
+        Mockito.when(this.service.createEmployee(Mockito.any(Employee.class))).thenReturn(emp);                                   // Stub the create method to return the employee but in this case we want the
+
+        this.mockMvc.perform(MockMvcRequestBuilders.post("/employee")                                                   // Post something to the '/employee' controller endpoint
+                        .content(this.objectMapper.writeValueAsString(emp))                                                       // writeValueAsString will generate a JSON String from the Java Object
+                        .contentType(MediaType.APPLICATION_JSON)                                                                  // set the content type to JSON
+                        .accept(MediaType.APPLICATION_JSON))                                                                      // accept JSON
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isCreated())                                                            // Expect that the status code is CREATED (201)
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(201))                            // Expect that the status element is correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data").exists())                                            // Expect that the data element exists
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.id").value(4L))                            // Expect that the ID is correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.firstName").value("Test FirstName 04"))    // Expect that the firstName is correct
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data.lastName").value("Test LastName 04"));     // Expect that the lastName is correct
+
+        /*
+         * Since we are working with Objects here, it could be possible that Mockito is comparing different Objects to each other
+         * which then could result in the test failing because the Objects (even though the content is identical) are not the same instance
+         *
+         * We need to make Mockito.verify more flexible by checking if the createEmployee Method was called with an Object similar to Employee
+         */
+        Mockito.verify(this.service, Mockito.times(1)).createEmployee(Mockito.any(Employee.class));
     }
 }

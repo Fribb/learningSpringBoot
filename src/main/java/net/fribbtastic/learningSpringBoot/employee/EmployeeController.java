@@ -49,4 +49,18 @@ public class EmployeeController {
 
         return ResponseEntity.status(HttpStatus.OK).body(response); // return the ApiResponse wrapped in a ResponseEntity
     }
+
+    /***
+     * Create a new Employee
+     * @param employee the employee information for creation
+     * @return the {@link ApiResponse} with the created Employee Wrapped in a {@link ResponseEntity}
+     */
+    @PostMapping
+    public ResponseEntity<ApiResponse<Employee>> createEmployee(@RequestBody Employee employee) {
+        Employee newEmployee = this.employeeService.createEmployee(employee);   // Call the createEmployee Method from the service to create a new Employee
+
+        ApiResponse<Employee> response = ApiResponse.createSuccessResponse(HttpStatus.CREATED, newEmployee);   // create a new Success ApiResponse
+
+        return ResponseEntity.status(HttpStatus.CREATED).body(response); // return the ApiResponse wrapped in a ResponseEntity
+    }
 }
