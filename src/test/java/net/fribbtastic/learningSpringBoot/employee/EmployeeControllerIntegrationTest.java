@@ -11,6 +11,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.core.ParameterizedTypeReference;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.HttpMethod;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.jdbc.Sql;
@@ -119,6 +120,30 @@ public class EmployeeControllerIntegrationTest {
         Assertions.assertThat(response.getBody().getErrorDetails().getMessage()).isEqualTo("Entity not found"); // assert that the message JSON element is set ass expected
         Assertions.assertThat(response.getBody().getErrorDetails().getDetails()).isEqualTo("Entity with the ID '" + id + "' could not be found"); // assert that the details JSON element is set as expected
         Assertions.assertThat(response.getBody().getErrorDetails().getTimestamp()).isNotEmpty();                        // assert that the timestamp JSON element is not empty
+
+    }
+
+    @DisplayName("Test [Integration]: create a new Employee")
+    @Sql({"classpath:employee/truncate.sql"})
+    @Test
+    public void testCreateEmployee() {
+
+        Employee newEmployee = new Employee("New Test Employee FirstName 01", "New Test Employee LastName 01");         // create a new Employee Object
+
+        HttpEntity<Employee> httpEntity = new HttpEntity<>(newEmployee);                                                // create a HttpEntity for that Employee Object
+
+        // now we make the POST request to the API to create the new Employee, we also expect that we get a Response in our defined APIResponse back that then has an Employee in the data element
+        ResponseEntity<ApiResponse<Employee>> response = this.template.exchange("/employee", HttpMethod.POST, httpEntity, new ParameterizedTypeReference<>() {
+        });
+
+        Assertions.assertThat(response.getStatusCode().value()).isEqualTo(201);                                 // assert that the response status code is 201 (CREATED)
+        Assertions.assertThat(response.getBody()).isNotNull();                                                          // assert that the response body is not null
+        Assertions.assertThat(response.getBody().getStatusCode()).isEqualTo(201);                               // assert that the JSON element statusCode is also 201
+        Assertions.assertThat(response.getBody().getData()).isNotNull();                                                // assert that the JSON element data is present
+        Assertions.assertThat(response.getBody().getData().getId()).isNotNull();                                        // assert that the JSON element ID is present
+        Assertions.assertThat(response.getBody().getData().getId().toString()).isNotEmpty();                            // assert that the ID is not empty
+        Assertions.assertThat(response.getBody().getData().getFirstName()).isEqualTo("New Test Employee FirstName 01");     // assert that the FirstName is set as expected
+        Assertions.assertThat(response.getBody().getData().getLastName()).isEqualTo("New Test Employee LastName 01");       // assert that the LastName is set as expected
 
     }
 }
