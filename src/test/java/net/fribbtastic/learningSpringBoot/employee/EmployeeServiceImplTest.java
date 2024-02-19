@@ -10,10 +10,7 @@ import org.mockito.Mock;
 import org.mockito.Mockito;
 import org.mockito.junit.jupiter.MockitoExtension;
 
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 
 /**
  * @author Frederic Eßer
@@ -115,6 +112,27 @@ class EmployeeServiceImplTest {
         Assertions.assertThat(emp.getId()).isEqualTo(5L);                                                       // Assert that the ID is as expected
         Assertions.assertThat(emp.getFirstName()).isEqualTo("Test Employee FirstName 05");                      // Assert that the FirstName is as expected
         Assertions.assertThat(emp.getLastName()).isEqualTo("Test Employee LastName 05");                        // Assert that the LastName is as expected
+    }
+
+    /**
+     * Test to update an existing Employee
+     */
+    @DisplayName("Test: update an existing Employee")
+    @Test
+    public void testUpdateEmployee() {
+        long id = 6L;
+
+        Employee empUpdate = new Employee(id, "Updated Test Employee FirstName 06", "Updated Test Employee LastName 06");   // Create a new employee Object
+
+        Mockito.when(this.repository.findById(id)).thenReturn(Optional.of(empUpdate));                                          // Stub the findById method to return the updated employee
+        Mockito.when(this.repository.save(empUpdate)).thenReturn(empUpdate);                                                    // Stub the save method to return the updated employee
+
+        Employee updatedEmp = this.service.updateEmployee(id, empUpdate);                                                       // update the Employee
+
+        Assertions.assertThat(updatedEmp).isNotNull();                                                                          // Assert that the created Employee is not null
+        Assertions.assertThat(updatedEmp.getId()).isEqualTo(6L);                                                        // Assert that the ID is as expected
+        Assertions.assertThat(updatedEmp.getFirstName()).isEqualTo("Updated Test Employee FirstName 06");               // Assert that the FirstName is as expected
+        Assertions.assertThat(updatedEmp.getLastName()).isEqualTo("Updated Test Employee LastName 06");                 // Assert that the LastName is as expected
     }
 
 }

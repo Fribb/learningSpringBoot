@@ -49,4 +49,23 @@ public class EmployeeServiceImpl implements EmployeeService {
     public Employee createEmployee(Employee employee) {
         return this.repository.save(employee);
     }
+
+    /**
+     * call the repository to update an existing employee by its ID
+     *
+     * @param id the ID of the employee
+     * @param employee the new employee object
+     * @return the updated employee Object
+     */
+    @Override
+    public Employee updateEmployee(long id, Employee employee) {
+        return this.repository.findById(id)
+                .map(emp -> {
+                    emp.setFirstName(employee.getFirstName());
+                    emp.setLastName(employee.getLastName());
+                    this.repository.save(emp);
+                    return emp;
+                })
+                .orElseThrow(() -> new EntityNotFoundException(id));
+    }
 }
