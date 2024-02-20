@@ -135,4 +135,22 @@ class EmployeeServiceImplTest {
         Assertions.assertThat(updatedEmp.getLastName()).isEqualTo("Updated Test Employee LastName 06");                 // Assert that the LastName is as expected
     }
 
+    /**
+     * Test to update an Employee that doesn't exist
+     */
+    @DisplayName("Test: update an Employee that doesn't exist")
+    @Test
+    public void testUpdateMissingEmployee() {
+
+        long id = 7L;
+        Employee empUpdate = new Employee(id, "Updated Test Employee FirstName 07", "Updated Test Employee LastName 07");
+
+        Mockito.when(this.repository.findById(id)).thenReturn(Optional.empty());                                      //Stub the findById method of the repository to return an Empty response
+
+        Assertions.assertThatThrownBy(() -> {                                                                           // Assert that an Exception will be thrown
+                    this.service.updateEmployee(id, empUpdate);                                                         // try to update an Employee with the missing ID 7
+                }).isInstanceOf(EntityNotFoundException.class)                                                          // Assert that the thrown Exception is the expected Exception Class
+                .hasMessage("Entity with the ID '7' could not be found");                                               // Assert that the Message of the Exception is the expected Message
+    }
+
 }
