@@ -146,4 +146,47 @@ public class EmployeeControllerIntegrationTest {
         Assertions.assertThat(response.getBody().getData().getLastName()).isEqualTo("New Test Employee LastName 01");       // assert that the LastName is set as expected
 
     }
+
+    @DisplayName("Test [Integration]: update an Employee")
+    @Sql({"classpath:employee/insert.sql"})
+    @Test
+    public void testUpdateEmployee() {
+        Employee updateEmployee = new Employee("Test Updated FirstName 01", "Test Updated LastName 01");
+
+        HttpEntity<Employee> httpEntity = new HttpEntity<>(updateEmployee);
+
+        ResponseEntity<ApiResponse<Employee>> response = this.template.exchange("/employee/" + 1L, HttpMethod.PUT, httpEntity, new ParameterizedTypeReference<>() {
+        });
+
+        Assertions.assertThat(response.getStatusCode().value()).isEqualTo(200);                                 // assert that the response status code is 201 (CREATED)
+        Assertions.assertThat(response.getBody()).isNotNull();                                                          // assert that the response body is not null
+        Assertions.assertThat(response.getBody().getStatusCode()).isEqualTo(200);                               // assert that the JSON element statusCode is also 201
+        Assertions.assertThat(response.getBody().getData()).isNotNull();                                                // assert that the JSON element data is present
+        Assertions.assertThat(response.getBody().getData().getId()).isNotNull();                                        // assert that the JSON element ID is present
+        Assertions.assertThat(response.getBody().getData().getId().toString()).isNotEmpty();                            // assert that the ID is not empty
+        Assertions.assertThat(response.getBody().getData().getFirstName()).isEqualTo("Test Updated FirstName 01");     // assert that the FirstName is set as expected
+        Assertions.assertThat(response.getBody().getData().getLastName()).isEqualTo("Test Updated LastName 01");       // assert that the LastName is set as expected
+    }
+
+    @DisplayName("Test [Integration]: update missing Employee")
+    @Sql({"classpath:employee/truncate.sql"})
+    @Test
+    public void testGetOneEmployee_MissingEmployee() {
+
+        Employee updateEmployee = new Employee("Test Updated FirstName 05", "Test Updated LastName 05");
+        HttpEntity<Employee> httpEntity = new HttpEntity<>(updateEmployee);
+
+        ResponseEntity<ApiResponse<Employee>> response = this.template.exchange("/employee/" + 5L, HttpMethod.PUT, httpEntity, new ParameterizedTypeReference<>() {
+        });
+
+        Assertions.assertThat(response.getStatusCode().value()).isEqualTo(404);                                 // assert that the response status code is 404
+        Assertions.assertThat(response.getBody()).isNotNull();                                                          // assert that the response body is not null
+        Assertions.assertThat(response.getBody().getStatusCode()).isEqualTo(404);                               // assert that the JSON element statusCode is 404
+        Assertions.assertThat(response.getBody().getErrorDetails()).isNotNull();                                        // assert that there is an error JSON element
+        Assertions.assertThat(response.getBody().getErrorDetails().getType()).isEqualTo(EntityNotFoundException.class.getSimpleName()); // assert that the type JSON element is set as expected
+        Assertions.assertThat(response.getBody().getErrorDetails().getMessage()).isEqualTo("Entity not found"); // assert that the message JSON element is set ass expected
+        Assertions.assertThat(response.getBody().getErrorDetails().getDetails()).isEqualTo("Entity with the ID '" + 5L + "' could not be found"); // assert that the details JSON element is set as expected
+        Assertions.assertThat(response.getBody().getErrorDetails().getTimestamp()).isNotEmpty();                        // assert that the timestamp JSON element is not empty
+
+    }
 }
