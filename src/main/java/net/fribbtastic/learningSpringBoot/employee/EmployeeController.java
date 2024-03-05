@@ -50,8 +50,9 @@ public class EmployeeController {
         return ResponseEntity.status(HttpStatus.OK).body(response); // return the ApiResponse wrapped in a ResponseEntity
     }
 
-    /***
+    /**
      * Create a new Employee
+     *
      * @param employee the employee information for creation
      * @return the {@link ApiResponse} with the created Employee Wrapped in a {@link ResponseEntity}
      */
@@ -62,5 +63,21 @@ public class EmployeeController {
         ApiResponse<Employee> response = ApiResponse.createSuccessResponse(HttpStatus.CREATED, newEmployee);   // create a new Success ApiResponse
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response); // return the ApiResponse wrapped in a ResponseEntity
+    }
+
+    /**
+     * Update an existing Employee
+     *
+     * @param id the ID of the employee that should be updated
+     * @param employee the employee object
+     * @return the {@link ApiResponse} with the created Employee Wrapped in a {@link ResponseEntity}
+     */
+    @PutMapping("/{id}")
+    public ResponseEntity<ApiResponse<Employee>> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
+        Employee updatedEmployee = this.employeeService.updateEmployee(id, employee);
+
+        ApiResponse<Employee> response = ApiResponse.createSuccessResponse(HttpStatus.OK, updatedEmployee);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 }
