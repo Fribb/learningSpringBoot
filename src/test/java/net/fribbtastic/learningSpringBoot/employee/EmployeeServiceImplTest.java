@@ -153,4 +153,50 @@ class EmployeeServiceImplTest {
                 .hasMessage("Entity with the ID '7' could not be found");                                               // Assert that the Message of the Exception is the expected Message
     }
 
+    /**
+     * Test to delete an Employee
+     */
+    @DisplayName("Test: delete existing Employee")
+    @Test
+    public void testDeleteEmployee() {
+        long id = 8L;
+        Employee deleteEmployee = new Employee(id, "Test Employee FirstName 08", "Test Employee LastName 08");  // create a new Employee that we want to delete
+
+        Mockito.when(this.repository.findById(id)).thenReturn(Optional.of(deleteEmployee));                                      // since we search for the Employee first that we want to delete, we mock the findById to return the employee
+
+        this.service.deleteEmployee(id);                                                                                         // call the service to delete the Employee
+
+        Mockito.verify(this.repository, Mockito.times(1)).findById(id);                                    // verify that Mockito ran once through the findById method with the provided ID of the Employee
+        Mockito.verify(this.repository, Mockito.times(1)).delete(deleteEmployee);                          // verify that Mockito ran once through the delete method with the provided Employee object
+
+        // I don't think it is necessary to specifically test that the Employee was deleted because we are mocking the repository and services here
+        // We would need to mock the findById with an empty response and then assert that the EntityNotFoundException was thrown.
+        /*
+        Mockito.when(this.repository.findById(id)).thenReturn(Optional.empty());
+
+        Assertions.assertThatThrownBy(() -> {
+                    this.service.getEmployee(id);
+                }).isInstanceOf(EntityNotFoundException.class)
+                .hasMessage("Entity with the ID '8' could not be found");
+         */
+    }
+
+    /**
+     * Test to delete an Employee that doesn't exist
+     */
+    @DisplayName("Test: delete a missing Employee")
+    @Test
+    public void testDeleteMissingEmployee() {
+        long id = 9L;
+
+        Mockito.when(this.repository.findById(id)).thenReturn(Optional.empty());               // mock that we return and empty response when the findById is being called
+
+        Assertions.assertThatThrownBy(() -> {                                                     // assert that an exception is being thrown
+                    this.service.deleteEmployee(id);                                              // try to delete the employee with the provided ID
+                }).isInstanceOf(EntityNotFoundException.class)                                    // expect that the Thrown exception is an Instance of the EntityNotFoundException
+                .hasMessage("Entity with the ID '9' could not be found");                         // expect that the message of the thrown Exception is as stated
+
+        Mockito.verify(this.repository, Mockito.times(1)).findById(id);     // verify that the findById method in the repository was called one time
+    }
+
 }

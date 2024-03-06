@@ -68,4 +68,14 @@ public class EmployeeServiceImpl implements EmployeeService {
                 })
                 .orElseThrow(() -> new EntityNotFoundException(id));
     }
+
+    /**
+     * call the repository to delete an existing employee
+     *
+     * @param id the ID of the employee
+     */
+    @Override
+    public void deleteEmployee(long id) {
+        this.repository.delete(this.getEmployee(id));
+    }
 }
