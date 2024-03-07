@@ -135,7 +135,7 @@ public class EmployeeControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error").exists())                                                                  // Expect that there is an error element
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.type").value(EntityNotFoundException.class.getSimpleName()))                 // The message is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.message").value("Entity not found"))                             // The message is set as expected
-                .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '4' could not be found"))    // The details is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '4' could not be found"))    // The details element is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.timestamp").isNotEmpty());                                                   // The timestamp is not empty (since the timestamp could/would be different between the time it was set in the response and in the test)
 
         Mockito.verify(this.service, Mockito.times(1)).getEmployee(id);                                                            // Verify that the getEmployee Method of the Service was called one time
@@ -205,6 +205,11 @@ public class EmployeeControllerUnitTest {
         Mockito.verify(this.service, Mockito.times(1)).updateEmployee(Mockito.anyLong(), Mockito.any(Employee.class));      // Verify that the updateEmployee Method of the Service was called one time
     }
 
+    /**
+     * Test updating an employee that doesn't exist
+     *
+     * @throws Exception Exception thrown by MockMVC
+     */
     @DisplayName("Test [WebMVC]: update a missing Employee")
     @Test
     public void testMvcUpdateMissingEmployee() throws Exception {
@@ -226,10 +231,59 @@ public class EmployeeControllerUnitTest {
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error").exists())                                                                  // Expect that there is an error element
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.type").value(EntityNotFoundException.class.getSimpleName()))                 // The message is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.message").value("Entity not found"))                             // The message is set as expected
-                .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '4' could not be found"))    // The details is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '4' could not be found"))    // The details element is set as expected
                 .andExpect(MockMvcResultMatchers.jsonPath("$.error.timestamp").isNotEmpty());                                                   // The timestamp is not empty (since the timestamp could/would be different between the time it was set in the response and in the test)
 
         Mockito.verify(this.service, Mockito.times(1)).updateEmployee(Mockito.anyLong(), Mockito.any(Employee.class));             // Verify that the updateEmployee Method of the Service was called one time
+    }
+
+    /**
+     * test deletion of an employee
+     *
+     * @throws Exception Exception thrown by MockMVC
+     */
+    @DisplayName("Test [WebMVC]: delete employee")
+    @Test
+    public void testMvcDeleteEmployee() throws Exception {
+        long id = 5L;
+
+        Mockito.doNothing().when(this.service).deleteEmployee(id);                                          // mock to do nothing when we delete an employee with the given ID
+
+        this.mockMvc.perform(MockMvcRequestBuilders.delete("/employee/{id}", id))                 // delete the employee
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(MockMvcResultMatchers.status().isOk())                                           // expect that the HTTP Status Code is 200 (OK)
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(200))      // expect that the status element is 200
+                .andExpect(MockMvcResultMatchers.jsonPath("$.data").doesNotExist());               // expect that there is no data element
+
+        Mockito.verify(this.service, Mockito.times(1)).deleteEmployee(id);            // verify that the deleteEmployee Method was called one time
+
+    }
+
+    /**
+     * Test deletion of a non-existing employee
+     *
+     * @throws Exception Exception thrown by MockMVC
+     */
+    @DisplayName("Test [WebMVC]: delete missing employee")
+    @Test
+    public void testMvcDeleteMissingEmployee() throws Exception {
+        long id = 6L;
+
+        Mockito.doThrow(new EntityNotFoundException(id)).when(this.service).deleteEmployee(id);                                                         // mock to throw an exception when we call the deleteEmployee method
+
+        this.mockMvc.perform(MockMvcRequestBuilders.delete("/employee/{id}", id))                                                             // delete the employee
+                .andDo(MockMvcResultHandlers.print())
+                .andExpect(result -> Assertions.assertThat(result.getResolvedException())                                                               // Assert that we have an exception
+                        .isInstanceOf(EntityNotFoundException.class)                                                                                    // Assert that the exception is an Instance of EntityNotFoundException
+                        .hasMessage("Entity with the ID '6' could not be found"))                                                                       // Assert that the message of the exception is as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.status").value(404))                                                  // The Code is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error").exists())                                                                 // Expect that there is an error element
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.type").value(EntityNotFoundException.class.getSimpleName()))                // The message is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.message").value("Entity not found"))                            // The message is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.details").value("Entity with the ID '6' could not be found"))   // The details element is set as expected
+                .andExpect(MockMvcResultMatchers.jsonPath("$.error.timestamp").isNotEmpty());                                                  // The timestamp is not empty (since the timestamp could/would be different between the time it was set in the response and in the test)
+
+        Mockito.verify(this.service, Mockito.times(1)).deleteEmployee(id);
     }
 
 }

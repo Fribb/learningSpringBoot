@@ -70,13 +70,27 @@ public class EmployeeController {
      *
      * @param id the ID of the employee that should be updated
      * @param employee the employee object
-     * @return the {@link ApiResponse} with the created Employee Wrapped in a {@link ResponseEntity}
+     * @return the {@link ApiResponse} with the updated Employee Wrapped in a {@link ResponseEntity}
      */
     @PutMapping("/{id}")
     public ResponseEntity<ApiResponse<Employee>> updateEmployee(@PathVariable Long id, @RequestBody Employee employee) {
         Employee updatedEmployee = this.employeeService.updateEmployee(id, employee);
 
         ApiResponse<Employee> response = ApiResponse.createSuccessResponse(HttpStatus.OK, updatedEmployee);
+
+        return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    /**
+     * delete an employee
+     * @param id the ID of the employee that should be deleted
+     * @return the {@link ApiResponse} with only the status code Wrapped in a {@link ResponseEntity}
+     */
+    @DeleteMapping("/{id}")
+    public ResponseEntity<ApiResponse<String>> deleteEmployee(@PathVariable Long id) {
+        this.employeeService.deleteEmployee(id);
+
+        ApiResponse<String> response = ApiResponse.createSuccessResponse(HttpStatus.OK, null);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
