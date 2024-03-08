@@ -87,10 +87,10 @@ public class EmployeeController {
      * @return the {@link ApiResponse} with only the status code Wrapped in a {@link ResponseEntity}
      */
     @DeleteMapping("/{id}")
-    public ResponseEntity<ApiResponse<String>> deleteEmployee(@PathVariable Long id) {
+    public ResponseEntity<ApiResponse<?>> deleteEmployee(@PathVariable Long id) {
         this.employeeService.deleteEmployee(id);
 
-        ApiResponse<String> response = ApiResponse.createSuccessResponse(HttpStatus.OK, null);
+        ApiResponse<?> response = ApiResponse.createSuccessResponse(HttpStatus.OK, null);
 
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }

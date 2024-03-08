@@ -189,4 +189,75 @@ public class EmployeeControllerIntegrationTest {
         Assertions.assertThat(response.getBody().getErrorDetails().getTimestamp()).isNotEmpty();                        // assert that the timestamp JSON element is not empty
 
     }
+
+    /**
+     * Test to delete an existing Employee
+     */
+    @DisplayName("Test [Integration]: delete Employee")
+    @Sql({"classpath:employee/insert.sql"})
+    @Test
+    public void testDeleteEmployee() {
+        long id = 1L;
+
+        // First, I want to make sure that we can actually get an employee with the ID
+        ResponseEntity<ApiResponse<Employee>> beforeDeleteResponse = this.template.exchange("/employee/" + id, HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+        });
+
+        // Assert that there is an Employee and the data is as expected
+        Assertions.assertThat(beforeDeleteResponse.getStatusCode().value()).isEqualTo(200);
+        Assertions.assertThat(beforeDeleteResponse.getBody()).isNotNull();
+        Assertions.assertThat(beforeDeleteResponse.getBody().getStatusCode()).isEqualTo(200);
+        Assertions.assertThat(beforeDeleteResponse.getBody().getData()).isNotNull();
+        Assertions.assertThat(beforeDeleteResponse.getBody().getData().getFirstName()).isEqualTo("Test FirstName 01");
+        Assertions.assertThat(beforeDeleteResponse.getBody().getData().getLastName()).isEqualTo("Test LastName 01");
+
+        // Now we delete the Employee
+        ResponseEntity<ApiResponse<?>> deleteResponse = this.template.exchange("/employee/" + id, HttpMethod.DELETE, null, new ParameterizedTypeReference<>() {
+        });
+
+        // The response should be as expected
+        Assertions.assertThat(deleteResponse.getStatusCode().value()).isEqualTo(200);
+        Assertions.assertThat(deleteResponse.getBody()).isNotNull();
+        Assertions.assertThat(deleteResponse.getBody().getStatusCode()).isEqualTo(200);
+        Assertions.assertThat(deleteResponse.getBody().getData()).isNull();
+
+        // Lastly, we (try to) get the Employee again to see if the element was actually deleted, this should then output an EntityNotFoundException
+        ResponseEntity<ApiResponse<Employee>> afterDeleteResponse = this.template.exchange("/employee/" + id, HttpMethod.GET, null, new ParameterizedTypeReference<>() {
+        });
+
+        // The response should be 404 and has an error JSON object
+        Assertions.assertThat(afterDeleteResponse.getStatusCode().value()).isEqualTo(404);
+        Assertions.assertThat(afterDeleteResponse.getBody()).isNotNull();
+        Assertions.assertThat(afterDeleteResponse.getBody().getStatusCode()).isEqualTo(404);
+        Assertions.assertThat(afterDeleteResponse.getBody().getErrorDetails()).isNotNull();
+        Assertions.assertThat(afterDeleteResponse.getBody().getErrorDetails().getType()).isEqualTo(EntityNotFoundException.class.getSimpleName());
+        Assertions.assertThat(afterDeleteResponse.getBody().getErrorDetails().getMessage()).isEqualTo("Entity not found");
+        Assertions.assertThat(afterDeleteResponse.getBody().getErrorDetails().getDetails()).isEqualTo("Entity with the ID '" + id + "' could not be found");
+        Assertions.assertThat(afterDeleteResponse.getBody().getErrorDetails().getTimestamp()).isNotEmpty();
+    }
+
+    /**
+     * Test to delete an Employee that doesn't exist
+     */
+    @DisplayName("Test [Integration]: delete missing Employee")
+    @Sql({"classpath:employee/truncate.sql"})
+    @Test
+    public void deleteMissingEmployee() {
+
+        long id = 1L;
+
+        // try to delete the Employee with an ID that doesn't exist
+        ResponseEntity<ApiResponse<?>> response = this.template.exchange("/employee/" + id, HttpMethod.DELETE, null, new ParameterizedTypeReference<>() {
+        });
+
+        // the response should be a 404 and an EntityNotFoundException
+        Assertions.assertThat(response.getStatusCode().value()).isEqualTo(404);
+        Assertions.assertThat(response.getBody()).isNotNull();
+        Assertions.assertThat(response.getBody().getStatusCode()).isEqualTo(404);
+        Assertions.assertThat(response.getBody().getErrorDetails()).isNotNull();
+        Assertions.assertThat(response.getBody().getErrorDetails().getType()).isEqualTo(EntityNotFoundException.class.getSimpleName());
+        Assertions.assertThat(response.getBody().getErrorDetails().getMessage()).isEqualTo("Entity not found");
+        Assertions.assertThat(response.getBody().getErrorDetails().getDetails()).isEqualTo("Entity with the ID '" + id + "' could not be found");
+        Assertions.assertThat(response.getBody().getErrorDetails().getTimestamp()).isNotEmpty();
+    }
 }
